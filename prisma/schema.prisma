@@ -1,0 +1,38 @@
+// Ponto — Studio time-tracking backend
+// This is a placeholder schema. The full data model lands in Phase 1.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  EMPLOYEE
+
+  @@map("user_role")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  avatarUrl String?  @map("avatar_url")
+  role      UserRole @default(EMPLOYEE)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([email])
+  @@index([role])
+  @@index([active])
+  @@index([deletedAt])
+  @@map("users")
+}
