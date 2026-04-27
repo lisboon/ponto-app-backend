@@ -29,7 +29,7 @@ export class EnvSchema {
 
   @IsString()
   @MinLength(16, {
-    message: 'JWT_SECRET must be at least 16 characters long',
+    message: 'O JWT_SECRET deve ter pelo menos 16 caracteres',
   })
   JWT_SECRET: string;
 
@@ -91,7 +91,7 @@ export function validateEnv(config: Record<string, unknown>): EnvSchema {
     const messages = errors
       .flatMap((e) => Object.values(e.constraints ?? {}))
       .join('; ');
-    throw new Error(`Invalid environment variables: ${messages}`);
+    throw new Error(`Variáveis de ambiente inválidas: ${messages}`);
   }
 
   return validated;

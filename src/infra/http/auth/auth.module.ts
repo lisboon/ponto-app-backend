@@ -10,7 +10,9 @@ import { RolesGuard } from './roles-guard';
       global: true,
       secret: (() => {
         if (!process.env.JWT_SECRET) {
-          throw new Error('JWT_SECRET environment variable is not set.');
+          throw new Error(
+            'A variável de ambiente JWT_SECRET não está definida.',
+          );
         }
         return process.env.JWT_SECRET;
       })(),

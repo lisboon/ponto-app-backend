@@ -15,7 +15,7 @@ export class TokenExpiredErrorFilter implements ExceptionFilter {
     response.status(HttpStatus.UNAUTHORIZED).json({
       statusCode: HttpStatus.UNAUTHORIZED,
       error: 'Unauthorized',
-      message: 'Authentication token has expired.',
+      message: 'O token de autenticação expirou.',
     });
   }
 }

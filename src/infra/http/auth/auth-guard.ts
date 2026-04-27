@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     if (!token) {
-      throw new UnauthorizedError('Authentication token not provided');
+      throw new UnauthorizedError('Token de autenticação não fornecido');
     }
 
     try {
@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
       request['user'] = payload;
       return true;
     } catch {
-      throw new UnauthorizedError('Invalid or expired token');
+      throw new UnauthorizedError('Token inválido ou expirado');
     }
   }
 

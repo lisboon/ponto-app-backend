@@ -1,6 +1,7 @@
 import BaseEntity from '@/modules/@shared/domain/entity/base.entity';
 import { EntityValidationError } from '@/modules/@shared/domain/errors/validation.error';
 import { normalizeEmail } from '@/modules/@shared/domain/utils/email';
+import { ContractType, UserRole } from '@/modules/@shared/domain/enums';
 import UserValidatorFactory from './validators/user.validator';
 
 export interface UserProps {
@@ -9,6 +10,13 @@ export interface UserProps {
   name: string;
   password: string;
   avatarUrl?: string;
+  role?: UserRole;
+  position?: string;
+  contractType?: ContractType;
+  weeklyMinutes?: number;
+  hourlyRate?: number;
+  workScheduleId?: string;
+  hireDate?: Date;
   active?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -20,6 +28,13 @@ export class User extends BaseEntity {
   private _name: string;
   private _password: string;
   private _avatarUrl?: string;
+  private _role: UserRole;
+  private _position?: string;
+  private _contractType?: ContractType;
+  private _weeklyMinutes?: number;
+  private _hourlyRate?: number;
+  private _workScheduleId?: string;
+  private _hireDate?: Date;
 
   constructor(props: UserProps) {
     super(
@@ -33,6 +48,13 @@ export class User extends BaseEntity {
     this._name = props.name;
     this._password = props.password;
     this._avatarUrl = props.avatarUrl;
+    this._role = props.role ?? UserRole.EMPLOYEE;
+    this._position = props.position;
+    this._contractType = props.contractType;
+    this._weeklyMinutes = props.weeklyMinutes;
+    this._hourlyRate = props.hourlyRate;
+    this._workScheduleId = props.workScheduleId;
+    this._hireDate = props.hireDate;
   }
 
   get email(): string {
@@ -51,6 +73,34 @@ export class User extends BaseEntity {
     return this._avatarUrl;
   }
 
+  get role(): UserRole {
+    return this._role;
+  }
+
+  get position(): string | undefined {
+    return this._position;
+  }
+
+  get contractType(): ContractType | undefined {
+    return this._contractType;
+  }
+
+  get weeklyMinutes(): number | undefined {
+    return this._weeklyMinutes;
+  }
+
+  get hourlyRate(): number | undefined {
+    return this._hourlyRate;
+  }
+
+  get workScheduleId(): string | undefined {
+    return this._workScheduleId;
+  }
+
+  get hireDate(): Date | undefined {
+    return this._hireDate;
+  }
+
   changeName(name: string) {
     this._name = name;
   }
@@ -64,10 +114,55 @@ export class User extends BaseEntity {
     this.update();
   }
 
-  updateUser(props: Partial<Pick<UserProps, 'name' | 'email' | 'avatarUrl'>>) {
-    if (props.name !== undefined) this.changeName(props.name);
-    if (props.email !== undefined) this.changeEmail(props.email);
+  changeAvatar(avatarUrl: string | undefined) {
+    this._avatarUrl = avatarUrl;
+    this.update();
+  }
+
+  changeRole(role: UserRole) {
+    this._role = role;
+    this.update();
+    this.validate(['role']);
+    if (this.notification.hasErrors()) {
+      throw new EntityValidationError(this.notification.toJSON());
+    }
+  }
+
+  assignWorkSchedule(workScheduleId: string) {
+    this._workScheduleId = workScheduleId;
+    this.update();
+  }
+
+  unassignWorkSchedule() {
+    this._workScheduleId = undefined;
+    this.update();
+  }
+
+  updateProfile(
+    props: Partial<
+      Pick<
+        UserProps,
+        | 'name'
+        | 'email'
+        | 'avatarUrl'
+        | 'position'
+        | 'contractType'
+        | 'weeklyMinutes'
+        | 'hourlyRate'
+        | 'hireDate'
+      >
+    >,
+  ) {
+    if (props.name !== undefined) this._name = props.name;
+    if (props.email !== undefined) this._email = normalizeEmail(props.email);
     if (props.avatarUrl !== undefined) this._avatarUrl = props.avatarUrl;
+    if (props.position !== undefined) this._position = props.position;
+    if (props.contractType !== undefined)
+      this._contractType = props.contractType;
+    if (props.weeklyMinutes !== undefined)
+      this._weeklyMinutes = props.weeklyMinutes;
+    if (props.hourlyRate !== undefined) this._hourlyRate = props.hourlyRate;
+    if (props.hireDate !== undefined) this._hireDate = props.hireDate;
 
     this.update();
     this.validate(['update']);
@@ -99,6 +194,13 @@ export class User extends BaseEntity {
       email: this._email,
       name: this._name,
       avatarUrl: this._avatarUrl,
+      role: this._role,
+      position: this._position,
+      contractType: this._contractType,
+      weeklyMinutes: this._weeklyMinutes,
+      hourlyRate: this._hourlyRate,
+      workScheduleId: this._workScheduleId,
+      hireDate: this._hireDate,
       active: this._active,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,

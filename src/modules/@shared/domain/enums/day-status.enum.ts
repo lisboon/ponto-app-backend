@@ -1,0 +1,8 @@
+export enum DayStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  INCOMPLETE = 'INCOMPLETE',
+  HOLIDAY = 'HOLIDAY',
+  ABSENT = 'ABSENT',
+  MEDICAL_LEAVE = 'MEDICAL_LEAVE',
+}

@@ -32,7 +32,7 @@ export class RolesGuard implements CanActivate {
 
     if (userLevel < requiredLevel) {
       throw new ForbiddenError(
-        `Access denied. Required role: ${requiredPermission.role}. Your role: ${user.role}.`,
+        `Acesso negado. Função necessária: ${requiredPermission.role}. Sua função: ${user.role}.`,
       );
     }
 
