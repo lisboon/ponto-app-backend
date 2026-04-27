@@ -1,0 +1,40 @@
+services:
+  ponto-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: ponto-backend
+    command: /bin/sh -c "npx prisma migrate deploy && node dist/infra/http/main.js"
+    ports:
+      - '3001:3001'
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - TZ=America/Cuiaba
+    env_file:
+      - .env
+    depends_on:
+      ponto-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ponto-db:
+    image: postgres:16-alpine
+    container_name: ponto-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: America/Cuiaba
+    volumes:
+      - ponto_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  ponto_db_data:
+    driver: local

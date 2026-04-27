@@ -1,5 +1,17 @@
-// Ponto — Studio time-tracking backend
-// This is a placeholder schema. The full data model lands in Phase 1.
+// Ponto — Studio time-tracking backend (single-tenant)
+//
+// Aligned with src/modules/@shared/domain/entity/base.entity.ts:
+//   BaseEntity = { id, active, createdAt, updatedAt, deletedAt }
+//
+// Soft-delete is the rule: every tenant-scoped entity carries `deletedAt`.
+// Exceptions:
+//   - TimeEntry: append-only, never deleted (audit trail).
+//   - HourBank: 1:1 with User; never deleted, only the underlying User can be.
+//   - AnnouncementRead: append-only marker.
+//   - Justification / MedicalLeave: have lifecycle states (status / revoked) instead.
+//
+// All write paths must funnel through PrismaQueryBuilder for consistent
+// `deletedAt: null` filtering on read queries.
 
 generator client {
   provider = "prisma-client"
@@ -18,21 +30,248 @@ enum UserRole {
   @@map("user_role")
 }
 
+enum ContractType {
+  CLT
+  PJ
+
+  @@map("contract_type")
+}
+
+enum PunchType {
+  CLOCK_IN
+  CLOCK_OUT
+
+  @@map("punch_type")
+}
+
+enum DayStatus {
+  OPEN 
+  CLOSED
+  INCOMPLETE
+  HOLIDAY 
+  ABSENT 
+  MEDICAL_LEAVE 
+
+  @@map("day_status")
+}
+
+enum JustificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("justification_status")
+}
+
+enum HolidayType {
+  NATIONAL
+  STATE
+  MUNICIPAL
+  STUDIO
+
+  @@map("holiday_type")
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("announcement_status")
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  avatarUrl String?  @map("avatar_url")
-  role      UserRole @default(EMPLOYEE)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id              String  @id @default(uuid())
+  email           String  @unique
+  name            String
+  password        String
+  avatarUrl       String? @map("avatar_url")
+  role            UserRole      @default(EMPLOYEE)
+  position        String?
+  contractType    ContractType? @map("contract_type")
+  weeklyMinutes   Int? @map("weekly_minutes")
+  hourlyRate      Decimal? @map("hourly_rate") @db.Decimal(10, 2)
+  workScheduleId  String?       @map("work_schedule_id")
+  workSchedule    WorkSchedule? @relation(fields: [workScheduleId], references: [id])
+  hireDate        DateTime? @map("hire_date") @db.Date
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  workDays              WorkDay[]
+  hourBank              HourBank?
+  justifications        Justification[]    @relation("JustificationTarget")
+  createdJustifications Justification[]    @relation("JustificationAuthor")
+  medicalLeaves         MedicalLeave[]     @relation("MedicalLeaveTarget")
+  createdMedicalLeaves  MedicalLeave[]     @relation("MedicalLeaveAuthor")
+  authoredAnnouncements Announcement[]     @relation("AnnouncementAuthor")
+  announcementReads     AnnouncementRead[]
 
   @@index([email])
   @@index([role])
   @@index([active])
   @@index([deletedAt])
   @@map("users")
+}
+
+model WorkSchedule {
+  id              String @id @default(uuid())
+  name            String
+  scheduleData    Json   @map("schedule_data")
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  users User[]
+
+  @@index([deletedAt])
+  @@map("work_schedules")
+}
+
+model WorkDay {
+  id                String @id @default(uuid())
+  userId            String @map("user_id")
+  user              User   @relation(fields: [userId], references: [id])
+  date              DateTime  @db.Date
+  status            DayStatus @default(OPEN)
+  expectedMinutes   Int? @map("expected_minutes")
+  workedMinutes     Int? @map("worked_minutes")
+  breakMinutes      Int? @map("break_minutes")
+  overtimeMinutes   Int? @map("overtime_minutes")
+  hourBankDelta     Int? @map("hour_bank_delta")
+  medicalLeaveId    String?       @map("medical_leave_id")
+  medicalLeave      MedicalLeave? @relation(fields: [medicalLeaveId], references: [id])
+  closedAt          DateTime? @map("closed_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  punches        TimeEntry[]
+  justifications Justification[]
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@index([status])
+  @@map("work_days")
+}
+
+model TimeEntry {
+  id              String  @id @default(uuid())
+  workDayId       String  @map("work_day_id")
+  workDay         WorkDay @relation(fields: [workDayId], references: [id])
+  punchType       PunchType @map("punch_type")
+  punchedAt       DateTime  @map("punched_at") 
+  ipAddress       String? @map("ip_address")
+  userAgent       String? @map("user_agent")
+  outsideStudio   Boolean @default(false) @map("outside_studio")
+  isManual        Boolean @default(false) @map("is_manual")
+  manualNote      String? @map("manual_note")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([workDayId, punchedAt])
+  @@map("time_entries")
+}
+
+model HourBank {
+  id                  String @id @default(uuid())
+  userId              String @unique @map("user_id")
+  user                User   @relation(fields: [userId], references: [id])
+  balanceMinutes      Int       @default(0) @map("balance_minutes")
+  lastRecalculatedAt  DateTime? @map("last_recalculated_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("hour_bank")
+}
+
+model Justification {
+  id                String  @id @default(uuid())
+  userId            String  @map("user_id")
+  user              User    @relation("JustificationTarget", fields: [userId], references: [id])
+  workDayId         String  @map("work_day_id")
+  workDay           WorkDay @relation(fields: [workDayId], references: [id])
+  createdBy         String @map("created_by")
+  author            User   @relation("JustificationAuthor", fields: [createdBy], references: [id])
+  description       String
+  attachmentUrl     String? @map("attachment_url")
+  status            JustificationStatus @default(PENDING)
+  reviewedBy        String?             @map("reviewed_by")
+  reviewedAt        DateTime?           @map("reviewed_at")
+  reviewNote        String?             @map("review_note")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([workDayId])
+  @@index([status])
+  @@map("justifications")
+}
+
+model MedicalLeave {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  user              User     @relation("MedicalLeaveTarget", fields: [userId], references: [id])
+  startDate         DateTime @map("start_date") @db.Date
+  endDate           DateTime @map("end_date") @db.Date
+  attachmentUrl     String  @map("attachment_url")
+  reason            String?
+  createdBy         String @map("created_by")
+  author            User   @relation("MedicalLeaveAuthor", fields: [createdBy], references: [id])
+  revokedAt         DateTime? @map("revoked_at")
+  revokedBy         String?   @map("revoked_by")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  workDays WorkDay[]
+
+  @@index([userId, startDate])
+  @@index([revokedAt])
+  @@map("medical_leaves")
+}
+
+model Holiday {
+  id          String      @id @default(uuid())
+  name        String
+  date        DateTime    @db.Date
+  type        HolidayType
+  description String?
+  isRecurring Boolean @default(false) @map("is_recurring")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@index([date])
+  @@index([deletedAt])
+  @@map("holidays")
+}
+
+model Announcement {
+  id              String @id @default(uuid())
+  authorId        String @map("author_id")
+  author          User   @relation("AnnouncementAuthor", fields: [authorId], references: [id])
+  title           String
+  content         String
+  status          AnnouncementStatus @default(DRAFT)
+  publishedAt     DateTime?          @map("published_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  reads AnnouncementRead[]
+
+  @@index([status])
+  @@index([deletedAt])
+  @@map("announcements")
+}
+
+model AnnouncementRead {
+  id             String       @id @default(uuid())
+  announcementId String       @map("announcement_id")
+  announcement   Announcement @relation(fields: [announcementId], references: [id])
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id])
+  readAt         DateTime     @default(now()) @map("read_at")
+
+  @@unique([announcementId, userId])
+  @@map("announcement_reads")
 }

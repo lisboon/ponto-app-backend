@@ -1,0 +1,48 @@
+services:
+  ponto-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: ponto-backend
+    command: /bin/sh -c "npx prisma migrate deploy && npx prisma generate && npm run start:dev"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '3001:3001'
+      - '5555:5555'
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - TZ=America/Cuiaba
+      - DATABASE_URL=postgresql://ponto:ponto@ponto-db:5432/ponto?schema=public
+      - CORS_ORIGINS=http://localhost:3000
+    env_file:
+      - .env
+    depends_on:
+      ponto-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  ponto-db:
+    image: postgres:16-alpine
+    container_name: ponto-db
+    environment:
+      POSTGRES_USER: ponto
+      POSTGRES_PASSWORD: ponto
+      POSTGRES_DB: ponto
+      TZ: America/Cuiaba
+    ports:
+      - '5432:5432'
+    volumes:
+      - ponto_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ponto -d ponto']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  ponto_db_data:
+    driver: local
