@@ -9,6 +9,7 @@ import { UserModule } from './user/user.module';
 import { WorkScheduleModule } from './work-schedule/work-schedule.module';
 import { HolidayModule } from './holiday/holiday.module';
 import { TimeClockModule } from './time-clock/time-clock.module';
+import { JustificationModule } from './justification/justification.module';
 import { validateEnv } from '@/infra/config/env.schema';
 
 @Module({
@@ -28,6 +29,7 @@ import { validateEnv } from '@/infra/config/env.schema';
     WorkScheduleModule,
     HolidayModule,
     TimeClockModule,
+    JustificationModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
