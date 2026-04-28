@@ -11,7 +11,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard } from '../auth/auth-guard';
 import { RolesGuard } from '../auth/roles-guard';
 import { Roles } from '../shared/roles.decorator';
@@ -23,6 +28,7 @@ import { ListHolidaysQueryDto } from './dto/list-holidays.query.dto';
 
 @ApiTags('Holidays')
 @ApiBearerAuth()
+@ApiResponse({ status: 422, description: 'Erro de validação' })
 @Controller('holidays')
 @UseGuards(AuthGuard, RolesGuard)
 export class HolidayController {

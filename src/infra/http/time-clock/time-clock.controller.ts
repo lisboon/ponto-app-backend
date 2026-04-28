@@ -10,7 +10,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { Request as ExpressRequest } from 'express';
 import { AuthGuard, JwtPayload } from '../auth/auth-guard';
@@ -26,6 +31,7 @@ const PUNCH_THROTTLE = { default: { limit: 5, ttl: 60_000 } } as const;
 
 @ApiTags('Time Clock')
 @ApiBearerAuth()
+@ApiResponse({ status: 422, description: 'Erro de validação' })
 @Controller('time-clock')
 @UseGuards(AuthGuard, RolesGuard)
 export class TimeClockController {

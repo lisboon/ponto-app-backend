@@ -10,6 +10,9 @@ import { WorkScheduleModule } from './work-schedule/work-schedule.module';
 import { HolidayModule } from './holiday/holiday.module';
 import { TimeClockModule } from './time-clock/time-clock.module';
 import { JustificationModule } from './justification/justification.module';
+import { MedicalLeaveModule } from './medical-leave/medical-leave.module';
+import { HourBankModule } from './hour-bank/hour-bank.module';
+import { AnnouncementModule } from './announcement/announcement.module';
 import { validateEnv } from '@/infra/config/env.schema';
 
 @Module({
@@ -30,6 +33,9 @@ import { validateEnv } from '@/infra/config/env.schema';
     HolidayModule,
     TimeClockModule,
     JustificationModule,
+    MedicalLeaveModule,
+    HourBankModule,
+    AnnouncementModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

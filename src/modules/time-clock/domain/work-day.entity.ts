@@ -209,6 +209,19 @@ export class WorkDay extends BaseEntity {
     this.update();
   }
 
+  unmarkMedicalLeave(newExpectedMinutes: number): void {
+    if (this._status !== DayStatus.MEDICAL_LEAVE) return;
+    this._status = DayStatus.OPEN;
+    this._medicalLeaveId = undefined;
+    this._expectedMinutes = newExpectedMinutes;
+    this._workedMinutes = undefined;
+    this._breakMinutes = undefined;
+    this._overtimeMinutes = undefined;
+    this._hourBankDelta = undefined;
+    this._closedAt = undefined;
+    this.update();
+  }
+
   validate(fields?: string[]): void {
     const validator = WorkDayValidatorFactory.create();
     validator.validate(this._notification, this, fields ?? ['create']);

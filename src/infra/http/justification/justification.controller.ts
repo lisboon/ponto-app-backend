@@ -11,7 +11,12 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthGuard, JwtPayload } from '../auth/auth-guard';
 import { RolesGuard } from '../auth/roles-guard';
 import { Roles } from '../shared/roles.decorator';
@@ -25,6 +30,7 @@ import { ListJustificationsQueryDto } from './dto/list-justifications.query.dto'
 
 @ApiTags('Justifications')
 @ApiBearerAuth()
+@ApiResponse({ status: 422, description: 'Erro de validação' })
 @Controller('justifications')
 @UseGuards(AuthGuard, RolesGuard)
 export class JustificationController {

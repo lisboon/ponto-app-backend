@@ -1,0 +1,187 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-04-28",
+  "__export_source": "insomnia.desktop.app",
+  "resources": [
+    {
+      "_id": "env_ponto",
+      "_type": "environment",
+      "name": "Ponto — Local",
+      "data": {
+        "base_url": "http://localhost:3001",
+        "token": ""
+      }
+    },
+    {
+      "_id": "wrk_ponto",
+      "_type": "workspace",
+      "name": "Ponto API"
+    },
+
+    { "_id": "fld_auth", "_type": "request_group", "parentId": "wrk_ponto", "name": "Auth" },
+    {
+      "_id": "req_login", "_type": "request", "parentId": "fld_auth", "name": "Login",
+      "method": "POST", "url": "{{ base_url }}/auth/login",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }],
+      "body": { "mimeType": "application/json", "text": "{\"email\":\"admin@studio.com\",\"password\":\"senha123\"}" }
+    },
+
+    { "_id": "fld_users", "_type": "request_group", "parentId": "wrk_ponto", "name": "Users" },
+    {
+      "_id": "req_register", "_type": "request", "parentId": "fld_users", "name": "Cadastrar usuário",
+      "method": "POST", "url": "{{ base_url }}/users",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"email\":\"joao@studio.com\",\"name\":\"João Silva\",\"password\":\"senha123\",\"role\":\"EMPLOYEE\"}" }
+    },
+    {
+      "_id": "req_list_users", "_type": "request", "parentId": "fld_users", "name": "Listar usuários",
+      "method": "GET", "url": "{{ base_url }}/users?page=1&perPage=20",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_me", "_type": "request", "parentId": "fld_users", "name": "Meu perfil",
+      "method": "GET", "url": "{{ base_url }}/users/me",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_assign_schedule", "_type": "request", "parentId": "fld_users", "name": "Atribuir jornada",
+      "method": "PATCH", "url": "{{ base_url }}/users/USER_ID/work-schedule",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"workScheduleId\":\"SCHEDULE_UUID\"}" }
+    },
+
+    { "_id": "fld_schedules", "_type": "request_group", "parentId": "wrk_ponto", "name": "Work Schedules" },
+    {
+      "_id": "req_create_schedule", "_type": "request", "parentId": "fld_schedules", "name": "Criar jornada",
+      "method": "POST", "url": "{{ base_url }}/work-schedules",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"name\":\"Padrão 8h\",\"scheduleData\":{\"monday\":{\"start\":\"09:00\",\"end\":\"18:00\",\"breakMinutes\":60},\"tuesday\":{\"start\":\"09:00\",\"end\":\"18:00\",\"breakMinutes\":60},\"wednesday\":{\"start\":\"09:00\",\"end\":\"18:00\",\"breakMinutes\":60},\"thursday\":{\"start\":\"09:00\",\"end\":\"18:00\",\"breakMinutes\":60},\"friday\":{\"start\":\"09:00\",\"end\":\"18:00\",\"breakMinutes\":60}}}" }
+    },
+    {
+      "_id": "req_list_schedules", "_type": "request", "parentId": "fld_schedules", "name": "Listar jornadas",
+      "method": "GET", "url": "{{ base_url }}/work-schedules",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+
+    { "_id": "fld_holidays", "_type": "request_group", "parentId": "wrk_ponto", "name": "Holidays" },
+    {
+      "_id": "req_create_holiday", "_type": "request", "parentId": "fld_holidays", "name": "Criar feriado",
+      "method": "POST", "url": "{{ base_url }}/holidays",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"name\":\"Independência\",\"date\":\"2026-09-07\",\"type\":\"NATIONAL\",\"isRecurring\":true}" }
+    },
+    {
+      "_id": "req_list_holidays", "_type": "request", "parentId": "fld_holidays", "name": "Listar feriados do ano",
+      "method": "GET", "url": "{{ base_url }}/holidays?year=2026",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+
+    { "_id": "fld_timeclock", "_type": "request_group", "parentId": "wrk_ponto", "name": "Time Clock" },
+    {
+      "_id": "req_punch", "_type": "request", "parentId": "fld_timeclock", "name": "Bater ponto",
+      "method": "POST", "url": "{{ base_url }}/time-clock/punch",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_today", "_type": "request", "parentId": "fld_timeclock", "name": "WorkDay de hoje",
+      "method": "GET", "url": "{{ base_url }}/time-clock/me/today",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_history", "_type": "request", "parentId": "fld_timeclock", "name": "Histórico próprio",
+      "method": "GET", "url": "{{ base_url }}/time-clock/me/history?page=1&perPage=30",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_close_day", "_type": "request", "parentId": "fld_timeclock", "name": "Fechar dia",
+      "method": "POST", "url": "{{ base_url }}/time-clock/users/USER_ID/close",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"date\":\"2026-04-28\"}" }
+    },
+    {
+      "_id": "req_manual_punch", "_type": "request", "parentId": "fld_timeclock", "name": "Batida manual (ADMIN)",
+      "method": "POST", "url": "{{ base_url }}/time-clock/users/USER_ID/manual-punch",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"date\":\"2026-04-28\",\"punchedAt\":\"2026-04-28T09:00:00.000Z\",\"note\":\"Correção de batida\"}" }
+    },
+
+    { "_id": "fld_justifications", "_type": "request_group", "parentId": "wrk_ponto", "name": "Justifications" },
+    {
+      "_id": "req_create_just", "_type": "request", "parentId": "fld_justifications", "name": "Criar justificação",
+      "method": "POST", "url": "{{ base_url }}/justifications",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"userId\":\"USER_UUID\",\"workDayId\":\"WORKDAY_UUID\",\"description\":\"Consulta médica\"}" }
+    },
+    {
+      "_id": "req_approve_just", "_type": "request", "parentId": "fld_justifications", "name": "Aprovar justificação",
+      "method": "PATCH", "url": "{{ base_url }}/justifications/JUST_ID/approve",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"reviewNote\":\"Aprovado\"}" }
+    },
+    {
+      "_id": "req_reject_just", "_type": "request", "parentId": "fld_justifications", "name": "Rejeitar justificação",
+      "method": "PATCH", "url": "{{ base_url }}/justifications/JUST_ID/reject",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"reviewNote\":\"Falta de comprovante\"}" }
+    },
+    {
+      "_id": "req_list_just", "_type": "request", "parentId": "fld_justifications", "name": "Listar justificações",
+      "method": "GET", "url": "{{ base_url }}/justifications?page=1&perPage=20",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+
+    { "_id": "fld_medical", "_type": "request_group", "parentId": "wrk_ponto", "name": "Medical Leaves" },
+    {
+      "_id": "req_create_ml", "_type": "request", "parentId": "fld_medical", "name": "Criar atestado",
+      "method": "POST", "url": "{{ base_url }}/medical-leaves",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"userId\":\"USER_UUID\",\"startDate\":\"2026-04-21\",\"endDate\":\"2026-04-23\",\"attachmentUrl\":\"https://storage/atestado.pdf\",\"reason\":\"Gripe\"}" }
+    },
+    {
+      "_id": "req_list_ml", "_type": "request", "parentId": "fld_medical", "name": "Listar atestados do usuário",
+      "method": "GET", "url": "{{ base_url }}/medical-leaves/users/USER_ID",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_revoke_ml", "_type": "request", "parentId": "fld_medical", "name": "Revogar atestado",
+      "method": "DELETE", "url": "{{ base_url }}/medical-leaves/ML_ID",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+
+    { "_id": "fld_hourbank", "_type": "request_group", "parentId": "wrk_ponto", "name": "Hour Bank" },
+    {
+      "_id": "req_hb_get", "_type": "request", "parentId": "fld_hourbank", "name": "Consultar saldo",
+      "method": "GET", "url": "{{ base_url }}/hour-bank/USER_ID",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_hb_recalc", "_type": "request", "parentId": "fld_hourbank", "name": "Recalcular saldo",
+      "method": "POST", "url": "{{ base_url }}/hour-bank/USER_ID/recalculate",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+
+    { "_id": "fld_announce", "_type": "request_group", "parentId": "wrk_ponto", "name": "Announcements" },
+    {
+      "_id": "req_create_draft", "_type": "request", "parentId": "fld_announce", "name": "Criar rascunho",
+      "method": "POST", "url": "{{ base_url }}/announcements",
+      "headers": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Authorization", "value": "Bearer {{ token }}" }],
+      "body": { "mimeType": "application/json", "text": "{\"title\":\"Reunião geral\",\"content\":\"Haverá uma reunião na sexta às 15h.\"}" }
+    },
+    {
+      "_id": "req_publish", "_type": "request", "parentId": "fld_announce", "name": "Publicar comunicado",
+      "method": "POST", "url": "{{ base_url }}/announcements/ANNOUNCE_ID/publish",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_list_announce", "_type": "request", "parentId": "fld_announce", "name": "Listar comunicados",
+      "method": "GET", "url": "{{ base_url }}/announcements?status=PUBLISHED",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    },
+    {
+      "_id": "req_mark_read", "_type": "request", "parentId": "fld_announce", "name": "Marcar como lido",
+      "method": "POST", "url": "{{ base_url }}/announcements/ANNOUNCE_ID/read",
+      "headers": [{ "name": "Authorization", "value": "Bearer {{ token }}" }]
+    }
+  ]
+}

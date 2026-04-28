@@ -1,9 +1,14 @@
 {
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "..",
   "testEnvironment": "node",
-  "testRegex": ".e2e-spec.ts$",
+  "testRegex": "test/.*\\.e2e-spec\\.ts$",
+  "setupFiles": ["reflect-metadata"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/src/$1",
+    "^uuid$": "<rootDir>/src/__mocks__/uuid.ts"
   }
 }

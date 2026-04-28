@@ -13,7 +13,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard, JwtPayload } from '../auth/auth-guard';
 import { RolesGuard } from '../auth/roles-guard';
@@ -31,6 +31,7 @@ import { SearchUsersQueryDto } from './dto/search-users.query.dto';
 const AUTH_THROTTLE = { default: { limit: 5, ttl: 60_000 } } as const;
 
 @ApiTags('Auth')
+@ApiResponse({ status: 422, description: 'Erro de validação' })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly userService: UserService) {}
@@ -45,6 +46,7 @@ export class AuthController {
 
 @ApiTags('Users')
 @ApiBearerAuth()
+@ApiResponse({ status: 422, description: 'Erro de validação' })
 @Controller('users')
 @UseGuards(AuthGuard, RolesGuard)
 export class UserController {
