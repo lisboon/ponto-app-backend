@@ -14,7 +14,7 @@
 // `deletedAt: null` filtering on read queries.
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
