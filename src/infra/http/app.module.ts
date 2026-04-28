@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { WorkScheduleModule } from './work-schedule/work-schedule.module';
+import { HolidayModule } from './holiday/holiday.module';
 import { validateEnv } from '@/infra/config/env.schema';
 
 @Module({
@@ -24,6 +25,7 @@ import { validateEnv } from '@/infra/config/env.schema';
     AuthModule,
     UserModule,
     WorkScheduleModule,
+    HolidayModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
